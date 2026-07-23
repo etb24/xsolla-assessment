@@ -38,7 +38,7 @@ async function main() {
   const report = await reviewRepository({
     repositoryPath: args.repositoryPath,
     baseRef: args.baseRef,
-    validationCommands: args.validations,
+    validationCommands: args.validations.map((command) => ({ kind: "shell", command })),
     format: args.format,
   });
   writeFileSync("review-report.md", report, "utf8");
