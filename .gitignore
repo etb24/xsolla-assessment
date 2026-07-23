@@ -2,3 +2,4 @@ node_modules/
 dist/
 review-report.md
 *.log
+CLAUDE.md

@@ -27,5 +27,5 @@
 
 ## Approximate focused-work time
 
-- Start:
+- Start: 2:30
 - Finish:
