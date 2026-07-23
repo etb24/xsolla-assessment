@@ -24,16 +24,32 @@ export function assertGitRepository(repositoryPath: string): void {
   }
 }
 
-export function changedFiles(repositoryPath: string, baseRef?: string): ChangedFile[] {
-  const base = baseRef ?? "main";
-  const output = git(repositoryPath, ["diff", "--name-status", `${base}...HEAD`]);
-
+export function parseNameStatus(output: string): ChangedFile[] {
   return output
     .split("\n")
     .filter(Boolean)
     .map((line) => {
-      const [code, ...pathParts] = line.split("\t");
+      const [code = "", ...pathParts] = line.split("\t");
+      if (code.startsWith("R") || code.startsWith("C")) {
+        // Rename/copy lines carry two paths (old, new); report the new one.
+        return { path: pathParts[1] ?? pathParts[0] ?? "", status: "renamed" as const };
+      }
       const status = code === "A" ? "added" : code === "D" ? "deleted" : "modified";
       return { path: pathParts.join("\t"), status };
     });
+}
+
+export function changedFiles(repositoryPath: string, baseRef?: string): ChangedFile[] {
+  const base = baseRef ?? "main";
+  try {
+    return parseNameStatus(git(repositoryPath, ["diff", "--name-status", `${base}...HEAD`]));
+  } catch (error) {
+    const stderr =
+      error instanceof Error && "stderr" in error
+        ? String((error as { stderr?: unknown }).stderr ?? "").split("\n")[0]
+        : "";
+    throw new GitInspectionError(
+      `Could not diff against base ref "${base}" — pass --base-ref to change it. ${stderr}`.trim(),
+    );
+  }
 }

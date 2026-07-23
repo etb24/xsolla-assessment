@@ -50,9 +50,13 @@ npm test
 ```bash
 npm run inspector -- review --repo ./path/to/repo --format markdown
 npm run inspector -- review --repo ./path/to/repo --validate "npm test"
+npm run inspector -- review --repo ./path/to/repo --base-ref origin/main --format json
 ```
 
-The report is written to `review-report.md`.
+The report is written to `review-report.md` (`review-report.json` with
+`--format json`). `--validate` accepts a shell command and may be repeated;
+commands run sequentially in the target repo with a 120 s timeout each. The
+CLI exits with code 1 if any validation command fails, so it can gate CI.
 
 ## MCP
 
@@ -62,9 +66,17 @@ Start the stdio server with:
 npm run mcp-server
 ```
 
-It exposes a `review_repository` tool. Inspect the implementation to determine
-its current input contract and whether it is suitable for the production model
-you propose.
+It exposes a `review_repository` tool with this input contract:
+
+- `repo_path` (string, required) — absolute path to the repository.
+- `base_ref` (string, optional) — base ref to diff against (default `main`).
+- `validation_commands` (string[][], optional) — commands as argv arrays,
+  e.g. `[["npm", "test"]]`. Unlike the CLI, these run **without a shell**
+  (`execFile`), so shell syntax is not interpreted; per-command output in the
+  report is capped at 10 000 characters to protect the caller's context.
+
+Git failures (bad path, missing base ref) are returned as tool errors with a
+clear message rather than crashing the server.
 
 ## Project layout
 
