@@ -19,6 +19,8 @@ export type ReportFormat = "markdown" | "json";
 export type ReviewRequest = {
   repositoryPath: string;
   baseRef?: string;
-  validationCommands?: ValidationCommand[];
+  validationCommands?: readonly ValidationCommand[];
   format?: ReportFormat;
+  /** Per-command cap on validation output included in the report (chars). */
+  outputLimitChars?: number;
 };

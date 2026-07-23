@@ -8,6 +8,13 @@ export type ValidationOptions = {
   timeoutMs?: number;
 };
 
+export function truncateOutput(output: string, maxChars: number): string {
+  if (output.length <= maxChars) {
+    return output;
+  }
+  return `${output.slice(0, maxChars)}\n… [truncated ${output.length - maxChars} characters]`;
+}
+
 export function describeCommand(command: ValidationCommand): string {
   return command.kind === "shell" ? command.command : command.argv.join(" ");
 }

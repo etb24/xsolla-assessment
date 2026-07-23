@@ -35,7 +35,7 @@ async function main() {
     return;
   }
 
-  const report = await reviewRepository({
+  const { report } = await reviewRepository({
     repositoryPath: args.repositoryPath,
     baseRef: args.baseRef,
     validationCommands: args.validations.map((command) => ({ kind: "shell", command })),
